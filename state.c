@@ -84,7 +84,7 @@ static HALE_status_t configurePlayers(GameState_t* gs, uint8_t numPlayers)
 	gs->numPlayers = numPlayers;
 	
 	//FIXME: Shim to allow us to continue...
-	PRINT_MSG("FIXME: Need real implementation; setting all random players as a shim");
+	// PRINT_MSG("FIXME: Need real implementation; setting all random players as a shim");
 	
 	if(numPlayers < 4)
 	{
@@ -97,8 +97,8 @@ static HALE_status_t configurePlayers(GameState_t* gs, uint8_t numPlayers)
 		gs->players[i].actions = randomActions;
 		gs->players[i].name = "RANDOM";
 	}
-	gs->players[numPlayers-2].actions = pythonSampleActions;
-	gs->players[numPlayers-2].name = "PYTHON";
+	gs->players[numPlayers-2].actions = greedyActions;
+	gs->players[numPlayers-2].name = "GREEDY";
 	
 	gs->players[numPlayers-1].actions = greedyActions;
 	gs->players[numPlayers-1].name = "GREEDY";
@@ -270,9 +270,9 @@ static HALE_status_t getTileToPlay(GameState_t* gs, uint8_t* tile)
 	//If it's not in their hand, OR it's an invalid tile to play... too bad
 	if(!isValidTilePlay(gs, *tile) || !tileInHand)
 	{
-		PRINT_MSG_INT("Player tried to play invalid tile", *tile);
-		PRINT_MSG_INT("Player", currentPlayer);
-		PRINT_MSG_ARG("Player name", gs->players[currentPlayer].name);
+		// PRINT_MSG_INT("Player tried to play invalid tile", *tile);
+		// PRINT_MSG_INT("Player", currentPlayer);
+		// PRINT_MSG_ARG("Player name", gs->players[currentPlayer].name);
 		
 		
 		//If the tile wasn't valid, too bad- all well-behavied players/AI
@@ -286,7 +286,7 @@ static HALE_status_t getTileToPlay(GameState_t* gs, uint8_t* tile)
 				break;
 			}
 		}
-		PRINT_MSG_INT("Playing a tile for them", *tile);
+		//PRINT_MSG_INT("Playing a tile for them", *tile);
 		if(!isValidTilePlay(gs, *tile))
 		{
 			return HALE_SHOULD_BE_IMPOSSIBLE;
@@ -316,12 +316,13 @@ static HALE_status_t handleMerger(GameState_t* gs, chain_t survivingChain, chain
 	{
 		int32_t bonus = 0;
 		calculatePlayerBonus(gs, i, defunctChain, &bonus);
+		PRINT_MSG_INT("Player Bonus", bonus);
 		gs->players[i].cash += bonus;
 	}
 	
 	int32_t chainPrices[NUM_CHAINS];
 	getChainPricesPerShare(gs, chainPrices, NULL); //FIXME: Error checking
-		
+	
 	//Starting with the current player (presumed to be the merge-maker), allow
 	//exchanging/selling stock
 	for(int i = 0; i < gs->numPlayers; i++)
@@ -352,6 +353,9 @@ static HALE_status_t handleMerger(GameState_t* gs, chain_t survivingChain, chain
 		
 		//If the trade is valid (which it must be at this point), execute
 		//Sale first
+		PRINT_MSG_INT("Player Merge Actions", cp);
+		PRINT_MSG_INT("Sell", sell);
+		PRINT_MSG_INT("Trade-In", tradeFor);
 		gs->players[cp].stocks[defunctChain] -= sell;
 		gs->remainingStocks[defunctChain] += sell;
 		gs->players[cp].cash += sell * chainPrices[defunctChain];
@@ -408,13 +412,22 @@ static HALE_status_t handleTilePlayMerger(GameState_t* gs, uint8_t tile, uint8_t
 	uint8_t numLargest = 0;
 	uint8_t sizeLargest = 0;
 	
+	//Print all chains that are in the merger
+	for(int i = 0; i < NUM_CHAINS; i++)
+	{
+		if(mergingChains[i])
+		{
+			PRINT_MSG_ARG("Merging Chains", chainNames[i]);
+		}
+	}
+
 	//First, find the largest chain that's merging
 	for(int i = 0; i < NUM_CHAINS; i++)
 	{
 		if( (mergingChains[i]) && (chainSizes[i] > sizeLargest) )
 		{
 			sizeLargest = chainSizes[i];
-			PRINT_MSG_INT("Largest so far", sizeLargest);
+			// PRINT_MSG_INT("Largest so far", sizeLargest);
 		}
 	}
 #ifdef ENABLE_PARANOID_CHECKS
@@ -443,7 +456,7 @@ static HALE_status_t handleTilePlayMerger(GameState_t* gs, uint8_t tile, uint8_t
 			largest[i] = 1;
 		}
 	}
-	PRINT_MSG_INT("Got this many chains of largest size", numLargest);
+	// PRINT_MSG_INT("Got this many chains of largest size", numLargest);
 #ifdef ENABLE_PARANOID_CHECKS
 	//Check if our largest size is valid
 	if(numLargest < 1)
@@ -483,7 +496,7 @@ static HALE_status_t handleTilePlayMerger(GameState_t* gs, uint8_t tile, uint8_t
 	//picking the first "largest" we find.
 	if(survivingChain == CHAIN_NONE)
 	{
-		PRINT_MSG("Only one largest (or player screwed up)");
+		// PRINT_MSG("Only one largest (or player screwed up)");
 		for(int i = 0; i < NUM_CHAINS; i++)
 		{
 			if(largest[i])
@@ -616,7 +629,7 @@ static HALE_status_t handleTilePlayCreate(GameState_t* gs, uint8_t tile)
 	getChainSizes(gs, chainSizes);
 	if( (chainToCreate >= CHAIN_NONE) || (chainSizes[chainToCreate] > 0))
 	{
-		PRINT_MSG_INT("Requested to form invalid chain; picking one for them... requested", chainToCreate);
+		//PRINT_MSG_INT("Requested to form invalid chain; picking one for them... requested", chainToCreate);
 		//NOTE: i defined external to loop because of paranoid check
 		int i;
 		for(i = 0; i < NUM_CHAINS; i++)
@@ -637,12 +650,14 @@ static HALE_status_t handleTilePlayCreate(GameState_t* gs, uint8_t tile)
 	}
 	
 	//Place tile on the board
+	PRINT_MSG_ARG("Creating Chain", chainNames[chainToCreate]);
 	gs->board[tile] = chainToCreate;
 	floodFillNonChain(gs, tile);
 	
 	//Give the founder a share of stock, if possible
 	if(gs->remainingStocks[chainToCreate])
 	{
+		PRINT_MSG_INT(chainNames[chainToCreate], 1);
 		gs->players[gs->currentPlayer].stocks[chainToCreate]++;
 		gs->remainingStocks[chainToCreate]--;
 	}
@@ -708,6 +723,7 @@ static HALE_status_t handleTilePlayPhase(GameState_t* gs)
 	uint8_t tile;
 	err_code = getTileToPlay(gs, &tile);
 	VERIFY_HALE_STATUS(err_code, "Should be impossible: no valid tile to play");
+	PRINT_MSG_INT("Player Number", gs->currentPlayer);
 	PRINT_MSG_INT("Playing tile", tile);
 	
 	//Even so, make sure it's a valid move in the first place
@@ -851,9 +867,13 @@ static HALE_status_t handleSharePurchasePhase(GameState_t* gs)
 	if(requestIsValid)
 	{
 		gs->players[currentPlayer].cash -= totalCost;
-		PRINT_MSG("FIXME: Should probably have a generic function for modifying shares a player has, handling moving them between the pool and the player...");
+		//PRINT_MSG("FIXME: Should probably have a generic function for modifying shares a player has, handling moving them between the pool and the player...");
 		for(int i = 0; i < NUM_CHAINS; i++)
 		{
+			if(buyRequest[i] > 0)
+			{
+				PRINT_MSG_INT(chainNames[i], buyRequest[i]);
+			}
 			gs->players[currentPlayer].stocks[i] += buyRequest[i];
 			gs->remainingStocks[i] -= buyRequest[i];
 		}
@@ -914,17 +934,21 @@ void runGame(uint8_t numPlayers)
 	
 	//Randomize first player
 	gs.currentPlayer = getRandom8(0, gs.numPlayers-1);
-	
+	PRINT_MSG_INT("Starting Player", gs.currentPlayer);
 	//Place <numPlayers> random tiles on the board
 	err_code = placeInitialTiles(&gs);
+	printGameBoard(&gs);
+	for(int i = 0; i < gs.numPlayers; i++)
+	{
+		printPlayer(&gs, i);
+	}
 	VERIFY_HALE_STATUS_FATAL(err_code, "Failed to deal place tiles");
 	
 	//So now everybody has tiles, the board is set up... time to start!
 	uint8_t gameOver = 0;
 	while(!gameOver)
 	{
-		printf("\n\n");
-		
+		printf("\n\nTURN START\n");
 		//Make sure the current player can actually play... If not, try
 		//to do something about it.
 		uint8_t numValidTiles = getNumValidTiles(&gs, gs.currentPlayer);
@@ -976,8 +1000,8 @@ void runGame(uint8_t numPlayers)
 				PRINT_MSG("FATAL: Player can't play, yet tiles remain in draw pile");
 				HANDLE_UNRECOVERABLE_ERROR(HALE_SHOULD_BE_IMPOSSIBLE);
 			}
-		}
 #endif
+		}
 		
 		
 		//Allow player to purchase shares
@@ -987,7 +1011,7 @@ void runGame(uint8_t numPlayers)
 		
 		if(canEndGame(&gs))
 		{
-			PRINT_MSG("Ending game is allowed right now!");
+			//PRINT_MSG("Ending game is allowed right now!");
 			err_code = handleEndGameQueryPhase(&gs, &gameOver);
 			VERIFY_HALE_STATUS_FATAL(err_code, "handleEndGameQueryPhase failed");
 			
@@ -1022,15 +1046,21 @@ void runGame(uint8_t numPlayers)
 #endif
 		
 	} //while !gameover
-	
+	// for consistency with printing
+	printGameBoard(&gs);
+	for(int i = 0; i < gs.numPlayers; i++)
+	{
+		printPlayer(&gs, i);
+	}
+
 	//Now that the game is over, display relevant statistics:
 	//-winner
 	//-holdings of each player (each stock type, cash)
 	//-total value of each player (bonuses + holdings + cash)
 	//-Player type/name
 	
-	PRINT_MSG("\r\nEND OF GAME");
-	PRINT_MSG("FIXME: handle ties!");
+	PRINT_MSG("END OF GAME");
+	// PRINT_MSG("FIXME: handle ties!");
 	uint8_t winner = 0;
 	int32_t winningValue = 0;
 	for(int i = 0; i < gs.numPlayers; i++)

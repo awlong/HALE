@@ -49,7 +49,7 @@ uint8_t randomPlayTile(GameState_t* gs, uint8_t playerNum)
 		HANDLE_UNRECOVERABLE_ERROR(HALE_AI_BADSTATE);
 	}
 	
-	PRINT_MSG_INT("Have this many tiles to choose from", numPlayable);
+//	PRINT_MSG_INT("Have this many tiles to choose from", numPlayable);
 	
 	uint8_t playThisTile = rand() % numPlayable;
 	
@@ -63,7 +63,7 @@ uint8_t randomPlayTile(GameState_t* gs, uint8_t playerNum)
 	
 	//Othewise, pick one at random
 	uint8_t tile = playableTiles[playThisTile];
-	PRINT_MSG_INT("Playing this tile", tile);
+//	PRINT_MSG_INT("Playing this tile", tile);
 	return tile;
 }
 
@@ -95,7 +95,7 @@ chain_t randomFormChain(GameState_t* gs, uint8_t playerNum)
 	
 	//Otherwise, pick one at random
 	chain_t formThisChain = validChains[rand() % numValid];
-	PRINT_MSG_INT("Forming this chain", formThisChain);
+//	PRINT_MSG_INT("Forming this chain", formThisChain);
 	return formThisChain;
 }
 

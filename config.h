@@ -5,7 +5,7 @@
 
 
 //Optionally enable paranoid checks, at the expense of some speed
-#define ENABLE_PARANOID_CHECKS
+//#define ENABLE_PARANOID_CHECKS
 
 //Optionally turn off some safety checks to try to go faster
 //#define GO_FAST_AND_BREAK_THINGS
@@ -17,14 +17,14 @@
 
 //Uncomment to enable color printing of the game board
 //Annoying if redirecting to a file, but nice if looking on a terminal
-#define ENABLE_COLOR_BOARD_PRINT
+//#define ENABLE_COLOR_BOARD_PRINT
 
 //Uncomment to print tile numbers when board is printed
 //Useful for humans only
-#define ENABLE_BOARD_TILE_NUMBERS
+//#define ENABLE_BOARD_TILE_NUMBERS
 
 //Uncomment to enable Python bindings
-#define HALE_ENABLE_PYTHON
+//#define HALE_ENABLE_PYTHON
 
 
 //Return values

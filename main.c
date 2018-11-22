@@ -14,7 +14,7 @@
 int main(int argc, char* argv[])
 {
 	//FIXME: Figure out player configuration (number of players, human/AI)
-	PRINT_MSG("FIXME: Need to identify player configuration: number of players, human/AI, ...");
+	// PRINT_MSG("FIXME: Need to identify player configuration: number of players, human/AI, ...");
 	
 	//FIXME: Initialize UI
 	
@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
 	
 	//Run the actual game
 	//FIXME: Need to actually use the number of players...
-	PRINT_MSG("FIXME: Need to pass real number of players to runGame(), not a constant 4");
+	// PRINT_MSG("FIXME: Need to pass real number of players to runGame(), not a constant 4");
 	runGame(4);
 	return 0;
 }

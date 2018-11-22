@@ -318,7 +318,7 @@ uint8_t isValidTilePlay(GameState_t* gs, uint8_t tile)
 	//Not valid if games state isn't valid
 	if(gs == NULL)
 	{
-		PRINT_MSG("gs invalid -> tile invalid");
+		//PRINT_MSG("gs invalid -> tile invalid");
 		return 0;
 	}
 	
@@ -329,7 +329,7 @@ uint8_t isValidTilePlay(GameState_t* gs, uint8_t tile)
 	//an invalid more to play a tile that's already in play, so...
 	if( (tile >= BOARD_TILES) || (tile == TILE_NULL) || gs->board[tile] != CHAIN_EMPTY)
 	{
-		PRINT_MSG_INT("tile OOB... or something like that. tile was", tile);
+		//PRINT_MSG_INT("tile OOB... or something like that. tile was", tile);
 		return 0;
 	}
 	
@@ -341,7 +341,7 @@ uint8_t isValidTilePlay(GameState_t* gs, uint8_t tile)
 	//If it doesn't cause a merger or create a chain, it must be OK
 	if(!merge && !create)
 	{
-		PRINT_MSG_INT("tile valid", tile);
+//		PRINT_MSG_INT("tile valid", tile);
 		return 1;
 	}
 	
@@ -368,11 +368,11 @@ uint8_t isValidTilePlay(GameState_t* gs, uint8_t tile)
 		//If two or more are safe, it's an illegal move
 		if(safeCount > 1)
 		{
-			PRINT_MSG_INT("tile would merge two safe chains. tile", tile);
+			// PRINT_MSG_INT("tile would merge two safe chains. tile", tile);
 			return 0;
 		}
 		
-		PRINT_MSG_INT("tile would cause valid merger", tile);
+		// PRINT_MSG_INT("tile would cause valid merger", tile);
 	}
 	
 	//If this would create a chain, make sure creating a chain is legal
@@ -393,7 +393,7 @@ uint8_t isValidTilePlay(GameState_t* gs, uint8_t tile)
 		//if not, return invalid move
 		if(!legal)
 		{
-			PRINT_MSG_INT("tile would create a new chain, but no new chains available. tile", tile);
+			// PRINT_MSG_INT("tile would create a new chain, but no new chains available. tile", tile);
 			return 0;
 		}
 	}
@@ -576,7 +576,7 @@ HALE_status_t floodFillNonChain(GameState_t* gs, uint8_t tile)
 		//FIXME: The second part of this expression is just a hack
 		//to make it evaluate the first tile- should really fix the
 		//logic/flow instead.
-		PRINT_MSG_INT("Type of tile we're looking at", gs->board[tmpTile]);
+		//PRINT_MSG_INT("Type of tile we're looking at", gs->board[tmpTile]);
 		if( (gs->board[tmpTile] == CHAIN_NONE) || (tmpTile == tile) )
 		{
 			//Change state of current tile
@@ -602,7 +602,7 @@ HALE_status_t floodFillNonChain(GameState_t* gs, uint8_t tile)
 					//If the square wasn't already on the list, add it
 					if(add)
 					{
-						PRINT_MSG_INT("Adding tile to to-check list", tmpAdj);
+						//PRINT_MSG_INT("Adding tile to to-check list", tmpAdj);
 #ifndef GO_FAST_AND_BREAK_THINGS
 						if(checkIdx == MAX_FLOOD_CHECK_SIZE)
 						{
@@ -623,7 +623,7 @@ HALE_status_t floodFillNonChain(GameState_t* gs, uint8_t tile)
 			PRINT_MSG("Tried to flood fill into a different chain");
 			return HALE_SHOULD_BE_IMPOSSIBLE;
 		}
-		PRINT_MSG_INT("checkIdx", checkIdx);
+		//PRINT_MSG_INT("checkIdx", checkIdx);
 	} //for(i = 0; i < checkIdx; i++)
 	
 	return HALE_OK;
@@ -642,20 +642,20 @@ uint8_t canEndGame(GameState_t* gs)
 	uint8_t atLeastOneChain = 0;
 	uint8_t chainSizes[NUM_CHAINS];
 	
-	getChainSizes(gs, chainSizes);
-	PRINT_MSG("FIXME: Should check if getChainSizes succeeded");
-	
+	HALE_status_t err_code = HALE_OK;
+	err_code = getChainSizes(gs, chainSizes);
+	VERIFY_HALE_STATUS(err_code, "getChainSizes did not succeed");
 	for(int i = 0; i < NUM_CHAINS; i++)
 	{
 		//Chain must be present AND safe- doesn't count if it's not on board
 		if( (chainSizes[i] < SAFE_CHAIN_SIZE) && (chainSizes[i] >= 2) )
 		{
-			PRINT_MSG("All chains NOT safe");
+			//PRINT_MSG("All chains NOT safe");
 			allChainsSafe = 0;
 		}
 		if(chainSizes[i] >= CHAIN_SIZE_GAME_END)
 		{
-			PRINT_MSG("Some chain is big enough");
+			//PRINT_MSG("Some chain is big enough");
 			someChainBigEnough = 1;
 		}
 		if(chainSizes[i] >= 2)
@@ -663,7 +663,7 @@ uint8_t canEndGame(GameState_t* gs)
 			atLeastOneChain = 1;
 		}
 	}
-	
+	PRINT_MSG_INT("status", ((allChainsSafe || someChainBigEnough) && (atLeastOneChain)));
 	return ( (allChainsSafe || someChainBigEnough) && (atLeastOneChain) );
 }
 

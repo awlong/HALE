@@ -23,7 +23,7 @@ PlayerActions_t greedyActions = {	.playTile = greedyPlayTile,
 uint8_t greedyPlayTile(GameState_t* gs, uint8_t playerNum)
 {
 	//FIXME: Incomplete
-	PRINT_MSG("FIXME: Incomplete");
+	// PRINT_MSG("FIXME: Incomplete");
 	return 0;
 }
 
@@ -35,7 +35,7 @@ chain_t greedyFormChain(GameState_t* gs, uint8_t playerNum)
 	//FIXME: Look to see if anybody else has stock in the chain before
 	//forming it? (ie, take bonus into account)?
 	//FIXME: Incomplete
-	PRINT_MSG("FIXME: Incomplete");
+	// PRINT_MSG("FIXME: Incomplete");
 	return CHAIN_NONE;
 }
 
@@ -43,7 +43,7 @@ chain_t greedyFormChain(GameState_t* gs, uint8_t playerNum)
 chain_t greedyMergerSurvivor(GameState_t* gs, uint8_t playerNum, uint8_t* options)
 {
 	//FIXME: Incomplete
-	PRINT_MSG("FIXME: Incomplete");
+	// PRINT_MSG("FIXME: Incomplete");
 	return CHAIN_NONE;
 }
 
@@ -51,7 +51,7 @@ chain_t greedyMergerSurvivor(GameState_t* gs, uint8_t playerNum, uint8_t* option
 void greedyMergerOrder(GameState_t* gs, uint8_t playerNum, chain_t survivor, uint8_t* options)
 {
 	//FIXME: Incomplete
-	PRINT_MSG("FIXME: Incomplete");
+	// PRINT_MSG("FIXME: Incomplete");
 }
 
 
