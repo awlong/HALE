@@ -40,3 +40,6 @@ HALE
 
 #backup files
 *~
+
+#python cache
+__pycache__/
