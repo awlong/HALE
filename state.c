@@ -819,7 +819,7 @@ static HALE_status_t handleSharePurchasePhase(GameState_t* gs)
 	}
 	if(totalSharesRequested > SHARES_PER_TURN)
 	{
-		PRINT_MSG_INT("Too many shares requested", totalSharesRequested);
+		// PRINT_MSG_INT("Too many shares requested", totalSharesRequested);
 		requestIsValid = 0;
 	}
 	
@@ -832,7 +832,7 @@ static HALE_status_t handleSharePurchasePhase(GameState_t* gs)
 	{
 		if(buyRequest[i] && chainSizes[i] < 2)
 		{
-			PRINT_MSG_INT("Chain doesn't exist", i);
+			// PRINT_MSG_INT("Chain doesn't exist", i);
 			requestIsValid = 0;
 		}
 	}
@@ -843,7 +843,7 @@ static HALE_status_t handleSharePurchasePhase(GameState_t* gs)
 	{
 		if(buyRequest[i] > gs->remainingStocks[i])
 		{
-			PRINT_MSG_INT("Not enough shares remining of chain", i);
+			// PRINT_MSG_INT("Not enough shares remining of chain", i);
 			requestIsValid = 0;
 		}
 	}
@@ -862,7 +862,7 @@ static HALE_status_t handleSharePurchasePhase(GameState_t* gs)
 	
 	if(totalCost > gs->players[currentPlayer].cash)
 	{
-		PRINT_MSG_INT("Purchase request cost exceeds player funds", totalCost);
+		// PRINT_MSG_INT("Purchase request cost exceeds player funds", totalCost);
 		requestIsValid = 0;
 	}
 	
@@ -886,7 +886,7 @@ static HALE_status_t handleSharePurchasePhase(GameState_t* gs)
 	//of your trade ahead of time is that you don't get to trade
 	else
 	{
-		PRINT_MSG_INT("Invalid trade request; ignoring trade phase. Player", currentPlayer);
+		// PRINT_MSG_INT("Invalid trade request; ignoring trade phase. Player", currentPlayer);
 	}
 	
 	return err_code;
