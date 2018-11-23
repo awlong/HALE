@@ -1,6 +1,8 @@
 import numpy as np
+import json
+import copy
 
-STATE_MAP = {'#':0, 'L':1, 'T':2, 'W':3, 'A':4, 'F':5, 'I':6, 'C':7}
+STATE_MAP = {'L':0, 'T':1, 'W':2, 'A':3, 'F':4, 'I':5, 'C':6, '#':7}
 CHAIN_MAP = {
     'LUXOR':0, 0:'LUXOR',
     'TOWER':1, 1:'TOWER',
@@ -8,7 +10,13 @@ CHAIN_MAP = {
     'AMERICAN':3, 3:'AMERICAN',
     'FESTIVAL':4, 4:'FESTIVAL',
     'IMPERIAL':5, 5:'IMPERIAL',
-    'CONTINENTAL':6, 6:'CONTINENTAL'}
+    'CONTINENTAL':6, 6:'CONTINENTAL',
+    'UNCONNECTED':7, 7:'UNCONNECTED'}
+
+# conver the board indexing into other reflected spaces
+HORIZ_BOARD = np.arange(9*12).reshape(9,12)[:,::-1].flatten()
+VERT_BOARD = np.arange(9*12).reshape(9,12)[::-1,:].flatten()
+HORIZ_VERT_BOARD = np.arange(9*12).reshape(9,12)[::-1,::-1].flatten()
 
 def parse_log(path):
     with open(path,'r') as f:
@@ -19,24 +27,22 @@ def parse_log(path):
     turn_starts = turn_starts + [i for i,line in enumerate(contents) if line == 'runGame: END OF GAME']
     
     game_log = {}
-    game_log['start'] = parse_header(contents[:turn_starts[0]])
+    game_log['start_state'] = parse_header(contents[:turn_starts[0]])
     turns = []
     for turn_id in range(len(turn_starts)-1):
-        print('TURNID:',turn_id)
         action, state = parse_turn(contents[turn_starts[turn_id]:turn_starts[turn_id+1]])
-        turns.append((action,state))
+        turns.append({'action':action,'state':state})
     game_log['turns'] = turns
     
-    game_log['end'] = parse_end_state(contents[turn_starts[-1]:])
+    game_log['end_state'] = parse_end_state(contents[turn_starts[-1]:])
     return game_log
 
 def parse_header(contents):
-    header = {}
-    header['player start'] = contents[0].split(':')[2]
     state = {}
+    state['starting_player'] = contents[0].split(':')[2]
     state['board'] = parse_board(contents[1:10])
     state = add_players_to_state(state, contents, 11)
-    return header, state
+    return state
 
 def parse_state(contents):
     board_start = [i+1 for i,line in enumerate(contents) if 'canEndGame' in line][0]
@@ -116,12 +122,12 @@ def parse_actions(contents):
         actions['create'] = create_action
 
     # logging share purchases
-    share_purchase_lines = [line for line in contents if 'SharePurchasePlan' in line]
+    share_purchase_lines = [line for line in contents if 'SharePurchasePhase' in line]
     if len(share_purchase_lines) > 0:
         share_actions = {}
         for line in share_purchase_lines:
             tokens = line.split(':')
-            share_actions[CHAIN_MAP[token[1].strip()]] = int(token[2]) 
+            share_actions[CHAIN_MAP[tokens[1].strip()]] = int(tokens[2]) 
         actions['share'] = share_actions
     return actions 
 
@@ -140,11 +146,106 @@ def parse_end_state(contents):
     state = add_players_to_state(state, contents, board_end+1)
     return state
 
-if __name__ == '__main__':
-    game_log = parse_log('../tmp/0.txt')
-    print(game_log['start'])
-    for turn in game_log['turns']:
-        print(turn[0])
 
-    print(game_log['end'])
+class NumpyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        if isinstance(obj, np.int64):
+            return int(obj)
+        return json.JSONEncoder.default(self, obj)
+
+def permute_state(state, permutation, horizontal, vertical):
+        state['board'] = permute_board(state['board'], permutation, horizontal, vertical)
+        for i in range(4):
+            state[i]['stocks'] = np.take(state[i]['stocks'], permutation[:-1])
+            state[i]['tiles'] = reflect_tile(state[i]['tiles'], horizontal, vertical)
+        return state
+
+def permute_action(action, permutation, horizontal, vertical):
+    action['tile'] = reflect_tile(action['tile'], horizontal, vertical)
+    if 'create' in action.keys():
+        action['create']['chain'] = permutation[action['create']['chain']]
+    if 'share' in action.keys():
+        shares = {}
+        for share_key in action['share'].keys():
+            share = int(share_key)
+            shares[permutation[share]] = action['share'][share_key]
+        action['share'] = shares
+    if 'merge' in action.keys():
+        chains = []
+        for chain in action['merge']['chains']:
+            chains.append(permutation[chain])
+        action['merge']['chains'] = chains
+        action['merge']['survivor'] = permutation[action['merge']['survivor']]
+    return action
+
+def permute_gamelog(aug_log, permutation, horizontal=False, vertical=False): 
+    aug_log['start_state'] = permute_state(aug_log['start_state'], permutation, horizontal, vertical)
+    for turn_id in range(len(game_log['turns'])):
+        aug_log['turns'][turn_id]['state'] = permute_state(aug_log['turns'][turn_id]['state'], permutation, horizontal, vertical)
+        aug_log['turns'][turn_id]['action'] = permute_action(aug_log['turns'][turn_id]['action'], permutation, horizontal, vertical)      
+    aug_log['end_state'] = permute_state(aug_log['end_state'], permutation, horizontal, vertical)
+    return aug_log
+
+def reflect_tile(tile, horizontal, vertical):
+    if isinstance(tile, list):
+        return [reflect_tile(x, horizontal, vertical) for x in tile]
+    if tile == 255:
+        return tile
+    if not horizontal and not vertical:
+        return tile
+    elif horizontal and not vertical:
+        return HORIZ_BOARD[tile]
+    elif not horizontal and vertical:
+        return VERT_BOARD[tile]
+    else:
+        return HORIZ_VERT_BOARD[tile]
+
+def permute_board(board, permutation, horizontal, vertical):
+    board = np.take(board, permutation, axis=0)
+    if horizontal:
+        board = board[:,:,::-1]
+    if vertical:
+        board = board[:,::-1,:]
+    return board
+
+def construct_all_permuted_logs(game_log):
+    # permute the L/T - [0,1], [1,0] (2)
+    # permute the W/A/F - [2,3,4],[2,4,3],[3,2,4],[3,4,2],[4,2,3],[4,3,2] (6)
+    # permute the I/C - [5,6], [6,5] (2)
+    # reflect left/right - (2)
+    # reflect top/bottom - (2)
+    game_logs = []
+    for LT in [[0,1],[1,0]]:
+        for WAF in [[2,3,4],[2,4,3],[3,2,4],[3,4,2],[4,2,3],[4,3,2]]:
+            for IC in [[5,6], [6,5]]:
+                permutation = LT+WAF+IC+[7]
+                for horizontal in [False, True]:
+                    for vertical in [False, True]:
+                        aug_log = permute_gamelog(copy.deepcopy(game_log), permutation, horizontal, vertical)
+                        game_logs.append(aug_log)
+    return game_logs
+
+if __name__ == '__main__':
+    import sys
+    import os
+    
+    if len(sys.argv) != 3:
+        print("usage: python {} file_path save_path")
+    file_path = sys.argv[1]
+    file_base = os.path.splitext(os.path.split(file_path)[-1])[0]
+
+    save_base = os.path.join(sys.argv[2], file_base)
+    game_log = parse_log(file_path)
+    augmented_logs = construct_all_permuted_logs(game_log)
+
+    import pickle
+    with open('{}.pik'.format(save_base), 'wb') as f:
+        pickle.dump(augmented_logs, f)
+
+    # for aug_id,log in enumerate(augmented_logs):
+    #     with open('{}_{}.pickle'.format(save_base, aug_id), 'w') as f:
+    #         json.dump(log, f, cls=NumpyEncoder, separators=(',',':'), indent=4)
+
     

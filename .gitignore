@@ -43,3 +43,9 @@ HALE
 
 #python cache
 __pycache__/
+
+#bloated data folders
+data
+
+#vscode
+.vscode/
