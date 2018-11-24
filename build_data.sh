@@ -14,6 +14,6 @@ do
     echo "Running Simulation $i"
     $hale_script > $log_save_dir/$i.txt
     echo "Augmenting Dataset"
-    python parser.py $log_save_dir/$i.txt $pik_save_dir
+    python parse_to_objects.py $log_save_dir/$i.txt $pik_save_dir
     echo ""
 done
