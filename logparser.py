@@ -1,22 +1,6 @@
 import numpy as np
 import copy
 
-STATE_MAP = {'L':0, 'T':1, 'W':2, 'A':3, 'F':4, 'I':5, 'C':6, '#':7}
-CHAIN_MAP = {
-    'LUXOR':0, 0:'LUXOR',
-    'TOWER':1, 1:'TOWER',
-    'WORLDWIDE':2, 2:'WORLDWIDE',
-    'AMERICAN':3, 3:'AMERICAN',
-    'FESTIVAL':4, 4:'FESTIVAL',
-    'IMPERIAL':5, 5:'IMPERIAL',
-    'CONTINENTAL':6, 6:'CONTINENTAL',
-    'UNCONNECTED':7, 7:'UNCONNECTED'}
-
-# conver the board indexing into other reflected spaces
-HORIZ_BOARD = np.arange(9*12).reshape(9,12)[:,::-1].flatten()
-VERT_BOARD = np.arange(9*12).reshape(9,12)[::-1,:].flatten()
-HORIZ_VERT_BOARD = np.arange(9*12).reshape(9,12)[::-1,::-1].flatten()
-
 ###################
 # PARSING FUNCTIONS
 ###################
