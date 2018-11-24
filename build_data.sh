@@ -5,6 +5,9 @@ log_save_dir=$data_dir/logs
 pik_save_dir=$data_dir/piks
 num_samples=100
 
+mkdir -p $log_save_dir
+mkdir -p $pik_save_dir
+
 for (( i=0; i < $num_samples; ++i ))
 do
     date
