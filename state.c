@@ -727,7 +727,6 @@ static HALE_status_t handleTilePlayPhase(GameState_t* gs)
 	uint8_t tile;
 	err_code = getTileToPlay(gs, &tile);
 	VERIFY_HALE_STATUS(err_code, "Should be impossible: no valid tile to play");
-	LOG_MSG_INT("Player Number", gs->currentPlayer);
 	LOG_MSG_INT("Playing tile", tile);
 	
 	//Even so, make sure it's a valid move in the first place
@@ -953,6 +952,7 @@ void runGame(uint8_t numPlayers)
 	while(!gameOver)
 	{
 		LOG_PRINT("\n\nTURN START\n");
+		LOG_MSG_INT("Player Number", gs.currentPlayer);
 		//Make sure the current player can actually play... If not, try
 		//to do something about it.
 		uint8_t numValidTiles = getNumValidTiles(&gs, gs.currentPlayer);
@@ -995,6 +995,7 @@ void runGame(uint8_t numPlayers)
 		//If we can't play, at least make a note of it
 		else
 		{
+			LOG_MSG_INT("Playing tile", TILE_NULL);
 			PRINT_MSG_INT("No tiles left, and player can't play; skipping tile play phase", gs.currentPlayer);
 #ifdef ENABLE_PARANOID_CHECKS
 			//This should never happen- should only be possible to end up with
