@@ -663,7 +663,7 @@ uint8_t canEndGame(GameState_t* gs)
 			atLeastOneChain = 1;
 		}
 	}
-	PRINT_MSG_INT("status", ((allChainsSafe || someChainBigEnough) && (atLeastOneChain)));
+	LOG_MSG_INT("status", ((allChainsSafe || someChainBigEnough) && (atLeastOneChain)));
 	return ( (allChainsSafe || someChainBigEnough) && (atLeastOneChain) );
 }
 
@@ -700,12 +700,12 @@ HALE_status_t printGameBoard(GameState_t* gs)
 				tileType = CHAIN_NONE+1;
 			}
 				
-			printf("%s ", chainStrings[tileType]);
+			LOG_PRINT("%s ", chainStrings[tileType]);
 		}
-		printf("\n");
+		LOG_PRINT("\n");
 	}
 	
-	printf("\n");
+	LOG_PRINT("\n");
 	
 	return HALE_OK;
 }

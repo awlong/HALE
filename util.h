@@ -3,11 +3,20 @@
 
 #include <inttypes.h>
 #include <stdio.h>
+// #include <stdlib.h>
 
 #include "config.h"
 
+extern FILE* log_ptr;
+
 #define HANDLE_UNRECOVERABLE_ERROR(x) handleUnrecoverableError(__func__, x)
 
+#define LOG_PRINT(format, ...) if (log_ptr) {fprintf(log_ptr, format, ##__VA_ARGS__);}
+#define LOG_MSG(msg) if(log_ptr) {fprintf(log_ptr, "%s: %s\n", __func__, msg);}
+#define LOG_MSG_ARG(msg ,arg) if(log_ptr) {fprintf(log_ptr, "%s: %s: %s\n", __func__, msg, arg);}
+#define LOG_MSG_INT(msg, arg) if(log_ptr) {fprintf(log_ptr, "%s: %s: %d\n", __func__, msg, arg);}
+#define LOG_MSG_LONG(msg, arg) if(log_ptr) {fprintf(log_ptr, "%s: %s: %ld\n", __func__, msg, arg);}
+#define LOG_MSG_CONLINE(msg, arg)
 #define PRINT_MSG(msg) fprintf(stdout, "%s: %s\n", __func__, msg)
 #define PRINT_MSG_ARG(msg,arg) fprintf(stdout, "%s: %s: %s\n", __func__, msg, arg)
 #define PRINT_MSG_INT(msg,arg) fprintf(stdout, "%s: %s: %d\n", __func__, msg, arg)

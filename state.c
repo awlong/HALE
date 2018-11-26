@@ -320,7 +320,7 @@ static HALE_status_t handleMerger(GameState_t* gs, chain_t survivingChain, chain
 	{
 		int32_t bonus = 0;
 		calculatePlayerBonus(gs, i, defunctChain, &bonus);
-		PRINT_MSG_INT("Player Bonus", bonus);
+		LOG_MSG_INT("Player Bonus", bonus);
 		gs->players[i].cash += bonus;
 	}
 	
@@ -357,9 +357,9 @@ static HALE_status_t handleMerger(GameState_t* gs, chain_t survivingChain, chain
 		
 		//If the trade is valid (which it must be at this point), execute
 		//Sale first
-		PRINT_MSG_INT("Player Merge Actions", cp);
-		PRINT_MSG_INT("Sell", sell);
-		PRINT_MSG_INT("Trade-In", tradeFor);
+		LOG_MSG_INT("Player Merge Actions", cp);
+		LOG_MSG_INT("Sell", sell);
+		LOG_MSG_INT("Trade-In", tradeFor);
 		gs->players[cp].stocks[defunctChain] -= sell;
 		gs->remainingStocks[defunctChain] += sell;
 		gs->players[cp].cash += sell * chainPrices[defunctChain];
@@ -421,7 +421,7 @@ static HALE_status_t handleTilePlayMerger(GameState_t* gs, uint8_t tile, uint8_t
 	{
 		if(mergingChains[i])
 		{
-			PRINT_MSG_ARG("Merging Chains", chainNames[i]);
+			LOG_MSG_ARG("Merging Chains", chainNames[i]);
 		}
 	}
 
@@ -511,7 +511,7 @@ static HALE_status_t handleTilePlayMerger(GameState_t* gs, uint8_t tile, uint8_t
 		}
 	}
 	
-	PRINT_MSG_ARG("Surviving chain", chainNames[survivingChain]);
+	LOG_MSG_ARG("Surviving chain", chainNames[survivingChain]);
 #ifdef ENABLE_PARANOID_CHECKS
 	if(!largest[survivingChain])
 	{
@@ -654,14 +654,14 @@ static HALE_status_t handleTilePlayCreate(GameState_t* gs, uint8_t tile)
 	}
 	
 	//Place tile on the board
-	PRINT_MSG_ARG("Creating Chain", chainNames[chainToCreate]);
+	LOG_MSG_ARG("Creating Chain", chainNames[chainToCreate]);
 	gs->board[tile] = chainToCreate;
 	floodFillNonChain(gs, tile);
 	
 	//Give the founder a share of stock, if possible
 	if(gs->remainingStocks[chainToCreate])
 	{
-		PRINT_MSG_INT(chainNames[chainToCreate], 1);
+		LOG_MSG_INT(chainNames[chainToCreate], 1);
 		gs->players[gs->currentPlayer].stocks[chainToCreate]++;
 		gs->remainingStocks[chainToCreate]--;
 	}
@@ -727,8 +727,8 @@ static HALE_status_t handleTilePlayPhase(GameState_t* gs)
 	uint8_t tile;
 	err_code = getTileToPlay(gs, &tile);
 	VERIFY_HALE_STATUS(err_code, "Should be impossible: no valid tile to play");
-	PRINT_MSG_INT("Player Number", gs->currentPlayer);
-	PRINT_MSG_INT("Playing tile", tile);
+	LOG_MSG_INT("Player Number", gs->currentPlayer);
+	LOG_MSG_INT("Playing tile", tile);
 	
 	//Even so, make sure it's a valid move in the first place
 	if(!isValidTilePlay(gs, tile))
@@ -757,12 +757,12 @@ static HALE_status_t handleTilePlayPhase(GameState_t* gs)
 	//money, updating the board, ...
 	if(merger)
 	{
-		PRINT_MSG_INT("Tile would cause merger", tile);
+		LOG_MSG_INT("Tile would cause merger", tile);
 		err_code = handleTilePlayMerger(gs, tile, numMergingChains, mergingChains);
 	}
 	else if(create)
 	{
-		PRINT_MSG_INT("Tile would create new chain", tile);
+		LOG_MSG_INT("Tile would create new chain", tile);
 		err_code = handleTilePlayCreate(gs, tile);
 	}
 	else
@@ -876,7 +876,7 @@ static HALE_status_t handleSharePurchasePhase(GameState_t* gs)
 		{
 			if(buyRequest[i] > 0)
 			{
-				PRINT_MSG_INT(chainNames[i], buyRequest[i]);
+				LOG_MSG_INT(chainNames[i], buyRequest[i]);
 			}
 			gs->players[currentPlayer].stocks[i] += buyRequest[i];
 			gs->remainingStocks[i] -= buyRequest[i];
@@ -938,7 +938,7 @@ void runGame(uint8_t numPlayers)
 	
 	//Randomize first player
 	gs.currentPlayer = getRandom8(0, gs.numPlayers-1);
-	PRINT_MSG_INT("Starting Player", gs.currentPlayer);
+	LOG_MSG_INT("Starting Player", gs.currentPlayer);
 	//Place <numPlayers> random tiles on the board
 	err_code = placeInitialTiles(&gs);
 	printGameBoard(&gs);
@@ -952,7 +952,7 @@ void runGame(uint8_t numPlayers)
 	uint8_t gameOver = 0;
 	while(!gameOver)
 	{
-		printf("\n\nTURN START\n");
+		LOG_PRINT("\n\nTURN START\n");
 		//Make sure the current player can actually play... If not, try
 		//to do something about it.
 		uint8_t numValidTiles = getNumValidTiles(&gs, gs.currentPlayer);
@@ -1063,7 +1063,7 @@ void runGame(uint8_t numPlayers)
 	//-total value of each player (bonuses + holdings + cash)
 	//-Player type/name
 	
-	PRINT_MSG("END OF GAME");
+	LOG_MSG("END OF GAME");
 	// PRINT_MSG("FIXME: handle ties!");
 	uint8_t winner = 0;
 	int32_t winningValue = 0;
@@ -1078,8 +1078,8 @@ void runGame(uint8_t numPlayers)
 		}
 	}
 	
-	PRINT_MSG_INT("Winner is player", winner);
-	PRINT_MSG_INT("Winning value", winningValue);
+	LOG_MSG_INT("Winner is player", winner);
+	LOG_MSG_INT("Winning value", winningValue);
 	
 	printGameBoard(&gs);
 	for(int i = 0; i < gs.numPlayers; i++)

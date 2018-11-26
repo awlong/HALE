@@ -12,7 +12,7 @@ for (( i=0; i < $num_samples; ++i ))
 do
     date
     echo "Running Simulation $i"
-    $hale_script > $log_save_dir/$i.txt
+    $hale_script -l $log_save_dir/$i.txt
     echo "Augmenting Dataset"
     python parse_to_objects.py $log_save_dir/$i.txt $pik_save_dir
     echo ""

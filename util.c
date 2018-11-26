@@ -16,6 +16,8 @@ const char* err_msg[HALE_NUM_STATUS] =	{	"OK",
 						"BOARD_CORRUPTED"
 					};
 
+FILE* log_ptr = NULL;
+
 void handleUnrecoverableError(const char* func, HALE_status_t err_code)
 {
 	if(err_code >= HALE_NUM_STATUS)

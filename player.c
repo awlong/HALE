@@ -70,22 +70,21 @@ HALE_status_t calculatePlayerValue(GameState_t* gs, uint8_t playerNum, int32_t* 
 void printPlayer(GameState_t* gs, uint8_t playerNum)
 {
 	Player_t* player = &(gs->players[playerNum]);
-	//FIXME: Trying to avoid printfs...
-	fprintf(stdout, "Player %d (%s)\n", playerNum, player->name);
-	fprintf(stdout, "$%d\n", player->cash);
-	fprintf(stdout, "Tiles: ");
+	LOG_PRINT("Player %d (%s)\n", playerNum, player->name);
+	LOG_PRINT("$%d\n", player->cash);
+	LOG_PRINT("Tiles:");
 	for(int i = 0; i < HAND_SIZE; i++)
 	{
-		fprintf(stdout, "%d ", player->tiles[i]);
+		LOG_PRINT("%d ", player->tiles[i]);
 	}
-	fprintf(stdout, "\nStocks: ");
+	LOG_PRINT("\nStocks: ");
 	for(int i = 0; i < NUM_CHAINS; i++)
 	{
-		fprintf(stdout, "%d ", player->stocks[i]);
+		LOG_PRINT("%d ", player->stocks[i]);
 	}
-	fprintf(stdout, "\n");
+	LOG_PRINT("\n");
 	
 	int32_t totalValue;
 	calculatePlayerValue(gs, playerNum, &totalValue);
-	fprintf(stdout, "Total value: $%d\n", totalValue);
+	LOG_PRINT("Total value: $%d\n", totalValue);
 }
